@@ -33,7 +33,7 @@ public class Nanograma {
 		initialize();
 	}
 
-	private void initialize() {
+	public void initialize() {
 		VistaTablero vistaTablero = new VistaTablero();
 		frame = vistaTablero.generarTablero(); 
 		vistaTablero.agregarPistas(frame);
@@ -51,6 +51,8 @@ public class Nanograma {
 public JFrame getFrame() {
     	return this.frame;
     }
+
+
 }
 
 
