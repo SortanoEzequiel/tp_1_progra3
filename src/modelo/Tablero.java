@@ -17,16 +17,10 @@ import javax.swing.SwingConstants;
 public class Tablero {
    private JFrame frame;
    private JButton[][] celdas = new JButton[5][5];
-   private int[][] solucion = {
-		    {1, 1, 1, 1, 0},
-		    {0, 1, 0, 0, 0},
-		    {1, 0, 1, 1, 0},
-		    {0, 1, 0, 1, 0},
-		    {1, 0, 0, 0, 1}
-		};
+   private int[][] solucion;
 
-public Tablero() {
-	   
+public Tablero(int[][] tableroYaCreado) {
+	   this.solucion=tableroYaCreado;
    }
    
   

@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import modelo.CreacionTablero;
 import modelo.Tablero;
 public class VistaTablero {
 	
@@ -24,7 +25,18 @@ public class VistaTablero {
 	
 
     public VistaTablero() {
-    	this.tablero = new Tablero();
+		CreacionTablero creador = new CreacionTablero();
+		creador.generarTablero("facil");
+		int[][] matrizJuego = creador.obtenerMatrizJuego();
+		this.tablero = new Tablero(matrizJuego);
+
+		        System.out.println("Matriz creada:");
+        for (int i = 0; i < matrizJuego.length; i++) {
+            for (int j = 0; j < matrizJuego[i].length; j++) {
+                System.out.print(matrizJuego[i][j] + " ");
+            }
+            System.out.println();
+        }
     }
     
     public JFrame generarTablero() {
