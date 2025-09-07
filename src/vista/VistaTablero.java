@@ -29,7 +29,7 @@ public class VistaTablero {
 		creador.generarTablero("facil");
 		int[][] matrizJuego = creador.obtenerMatrizJuego();
 		this.tablero = new Tablero(matrizJuego);
-
+		this.tablero.inicializarCeldas();
 		        System.out.println("Matriz creada:");
         for (int i = 0; i < matrizJuego.length; i++) {
             for (int j = 0; j < matrizJuego[i].length; j++) {
@@ -38,6 +38,7 @@ public class VistaTablero {
             System.out.println();
         }
     }
+    
     
     public JFrame generarTablero() {
        	frame = new JFrame();
@@ -85,6 +86,7 @@ public class VistaTablero {
 
        	        celdas [fila][col] = celda;
        	        panel.add(celda);
+       	        tablero.setCeldas(celdas);
        	    }
        }
        	return frame;
@@ -127,5 +129,6 @@ public class VistaTablero {
     	});
     	return comprobarBtn;
     }
+    
  }
 

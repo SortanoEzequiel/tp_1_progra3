@@ -21,31 +21,18 @@ public class Tablero {
 
 public Tablero(int[][] tableroYaCreado) {
 	   this.solucion=tableroYaCreado;
+	   
    }
-   
-  
-
-//   public JButton comprobarResultadosButton() {
-//   	JButton comprobarBtn = new JButton("Comprobar");
-//   	comprobarBtn.addActionListener(e -> {
-//   	    boolean correcto = true;
-//   	    for (int fila = 0; fila < 5; fila++) {
-//   	        for (int col = 0; col < 5; col++) {
-//   	            Color color = celdas[fila][col].getBackground();
-//   	            int valor = (color.equals(Color.BLACK)) ? 1 : 0;
-//   	            if (valor != solucion[fila][col]) {
-//   	                correcto = false;
-//   	                break;
-//   	            }
-//   	        }
-//   	    }
-//   	    String mensaje = correcto ? "¡Correcto! 🎉" : "Ups, hay errores 😅";
-//   	    JOptionPane.showMessageDialog(frame, mensaje);
-//   	});
-//   	return comprobarBtn;
-//   }
-   
+public void inicializarCeldas() {
+    for (int fila = 0; fila < 5; fila++) {
+        for (int col = 0; col < 5; col++) {
+            celdas[fila][col] = new JButton();
+            celdas[fila][col].setBackground(Color.WHITE); // o el color inicial que prefieras
+        }
+    }
+} 
    public String comprobarResultados() {
+	  
 	    boolean correcto = true;
 	    for (int fila = 0; fila < 5; fila++) {
 	        for (int col = 0; col < 5; col++) {
@@ -93,5 +80,7 @@ public Tablero(int[][] tableroYaCreado) {
   public int[][] getSolucion(){
 	  return solucion;
   }
-
+  public void setCeldas(JButton[][] celdasExternas) {
+	    this.celdas = celdasExternas;
+	}
 }
