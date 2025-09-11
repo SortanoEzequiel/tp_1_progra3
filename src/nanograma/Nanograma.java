@@ -39,18 +39,22 @@ public class Nanograma {
 		vistaTablero.agregarPistas(frame);
 
 		
-		//comparamos el resultado esperado con el enviado por el usuario
-		JButton comprobarBtn;
-		
-			comprobarBtn = vistaTablero.comprobarResultadosButton();
-		
-		frame.getContentPane().add(comprobarBtn, BorderLayout.SOUTH);
+		//actualizamos el boton comprobar 
+		vistaTablero.actualizarPanelInferior(vistaTablero.wrapComprobarButton());
+
     }
 	
 	
-public JFrame getFrame() {
+	public JFrame getFrame() {
     	return this.frame;
     }
+	
+	public void mostrar() {
+	    if (frame != null) {
+	        frame.setVisible(true);
+	    }
+	}
+
 
 
 }

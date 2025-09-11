@@ -1,24 +1,24 @@
-package nanograma;
-
-import java.awt.Color;
-import java.awt.EventQueue;
-
-import javax.swing.UIManager;
-
-public class NanogramaGame {
-		public static void main(String[] args) {
-			UIManager.put("Button.select", Color.WHITE);
-			EventQueue.invokeLater(new Runnable() {
-				public void run() {
-					try {
-						Nanograma window = new Nanograma();
-						window.getFrame().setVisible(true);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			});
-		
-	}
-
-}
+//package nanograma;
+//
+//import java.awt.Color;
+//import java.awt.EventQueue;
+//
+//import javax.swing.UIManager;
+//
+//public class NanogramaGame {
+//		public static void main(String[] args) {
+//			UIManager.put("Button.select", Color.WHITE);
+//			EventQueue.invokeLater(new Runnable() {
+//				public void run() {
+//					try {
+//						Nanograma window = new Nanograma();
+//						window.getFrame().setVisible(true);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			});
+//		
+//	}
+//
+//}
