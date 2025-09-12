@@ -1,17 +1,11 @@
 package vista;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridLayout;
+import java.awt.*;
 import javax.swing.*;
 import controller.ControladorInicio;
-import modelo.CreacionTablero;
-import modelo.Tablero;
 
 public class VistaTablero {
     private JFrame frame;
-    private Tablero tablero;
     private JPanel panel;
     private JButton[][] celdas = new JButton[5][5];
     private ControladorInicio controlador;
@@ -19,21 +13,18 @@ public class VistaTablero {
     private JPanel pistasColumnas;
     private JPanel pistasFilas;
 
-    public VistaTablero() {
-        CreacionTablero creador = new CreacionTablero();
-        creador.generarTablero("facil");
-        int[][] matrizJuego = creador.obtenerMatrizJuego();
-        this.tablero = new Tablero(matrizJuego);
+    public VistaTablero(ControladorInicio controlador) {
+        this.controlador = controlador;
     }
 
     public JFrame generarTablero() {
-        frame = new JFrame();
-        frame.getContentPane().setBackground(Color.WHITE);
-        frame.setBounds(100, 100, 450, 300);
+        frame = new JFrame("Nonograma");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().setLayout(new BorderLayout());
+        frame.setSize(600, 600);
+        frame.setLayout(new BorderLayout());
+
         panel = new JPanel(new GridLayout(5, 5));
-        frame.getContentPane().add(panel);
+        frame.add(panel, BorderLayout.CENTER);
 
         for (int fila = 0; fila < 5; fila++) {
             for (int col = 0; col < 5; col++) {
@@ -48,28 +39,29 @@ public class VistaTablero {
                 celda.setBorder(BorderFactory.createLineBorder(Color.GRAY));
                 celda.setBackground(Color.WHITE);
 
-                celda.addActionListener(e -> tablero.actualizarEstado(f, c));
+                celda.addActionListener(e -> controlador.celdaClickeada(f, c));
 
                 celdas[fila][col] = celda;
                 panel.add(celda);
             }
         }
 
-        tablero.setCeldas(celdas);
-        agregarPistas(frame);
+        controlador.setCeldas(celdas);
+        agregarPistas();
         actualizarPanelInferior(wrapComprobarButton());
+
         return frame;
     }
 
-    public void agregarPistas(JFrame frame) {
-        if (pistasColumnas != null) frame.getContentPane().remove(pistasColumnas);
-        if (pistasFilas != null) frame.getContentPane().remove(pistasFilas);
+    public void agregarPistas() {
+        if (pistasColumnas != null) frame.remove(pistasColumnas);
+        if (pistasFilas != null) frame.remove(pistasFilas);
 
         pistasColumnas = new JPanel(new GridLayout(1, 5));
         pistasFilas = new JPanel(new GridLayout(5, 1));
 
-        for (int col = 0; col < tablero.getSolucion()[0].length; col++) {
-            String pistaTexto = tablero.generarPistaColumna(tablero.getSolucion(), col);
+        for (int col = 0; col < 5; col++) {
+            String pistaTexto = controlador.generarPistaColumna(col);
             String[] numeros = pistaTexto.split(" ");
             JPanel pistaColPanel = new JPanel(new GridLayout(numeros.length, 1));
             for (String num : numeros) {
@@ -78,20 +70,20 @@ public class VistaTablero {
             }
             pistasColumnas.add(pistaColPanel);
         }
-        frame.getContentPane().add(pistasColumnas, BorderLayout.NORTH);
+        frame.add(pistasColumnas, BorderLayout.NORTH);
 
-        for (int fila = 0; fila < tablero.getSolucion().length; fila++) {
-            String pistaTexto = tablero.generarPistaFila(tablero.getSolucion()[fila]);
+        for (int fila = 0; fila < 5; fila++) {
+            String pistaTexto = controlador.generarPistaFila(fila);
             JLabel pista = new JLabel(pistaTexto, SwingConstants.RIGHT);
             pistasFilas.add(pista);
         }
-        frame.getContentPane().add(pistasFilas, BorderLayout.WEST);
+        frame.add(pistasFilas, BorderLayout.WEST);
     }
 
     public JButton comprobarResultadosButton() {
         JButton comprobarBtn = new JButton("Comprobar");
         comprobarBtn.addActionListener(e -> {
-            String mensaje = tablero.comprobarResultados();
+            String mensaje = controlador.comprobarResultados();
             JOptionPane.showMessageDialog(frame, mensaje);
 
             JPanel opcionesPanel = new JPanel(new GridLayout(1, 2, 10, 10));
@@ -100,8 +92,7 @@ public class VistaTablero {
                 JButton jugarOtroBtn = new JButton("Jugar otro");
                 jugarOtroBtn.addActionListener(ev -> {
                     frame.dispose();
-                    controlador = new ControladorInicio();
-                    controlador.iniciarJuego();
+                    controlador.iniciarJuego("facil"); // o dificultad actual
                 });
                 opcionesPanel.add(jugarOtroBtn);
             } else {
@@ -111,9 +102,7 @@ public class VistaTablero {
                 JButton cambiarTableroBtn = new JButton("Cambiar tablero");
                 cambiarTableroBtn.addActionListener(ev -> {
                     frame.dispose();
-                    VistaTablero nuevaVista = new VistaTablero();
-                    JFrame nuevoFrame = nuevaVista.generarTablero();
-                    nuevoFrame.setVisible(true);
+                    controlador.iniciarJuego("facil"); // o nueva dificultad
                 });
 
                 opcionesPanel.add(intentarDeNuevoBtn);
@@ -127,7 +116,7 @@ public class VistaTablero {
 
     public void reconstruirTablero() {
         panel.removeAll();
-        tablero.reiniciarEstados();
+        controlador.reiniciarTablero();
 
         for (int fila = 0; fila < 5; fila++) {
             for (int col = 0; col < 5; col++) {
@@ -142,15 +131,15 @@ public class VistaTablero {
                 celda.setBorder(BorderFactory.createLineBorder(Color.GRAY));
                 celda.setBackground(Color.WHITE);
 
-                celda.addActionListener(e -> tablero.actualizarEstado(f, c));
+                celda.addActionListener(e -> controlador.celdaClickeada(f, c));
 
                 celdas[fila][col] = celda;
                 panel.add(celda);
             }
         }
 
-        tablero.setCeldas(celdas);
-        agregarPistas(frame);
+        controlador.setCeldas(celdas);
+        agregarPistas();
         actualizarPanelInferior(wrapComprobarButton());
         frame.revalidate();
         frame.repaint();
@@ -158,10 +147,10 @@ public class VistaTablero {
 
     public void actualizarPanelInferior(JPanel nuevoPanel) {
         if (panelInferiorActual != null) {
-            frame.getContentPane().remove(panelInferiorActual);
+            frame.remove(panelInferiorActual);
         }
         panelInferiorActual = nuevoPanel;
-        frame.getContentPane().add(panelInferiorActual, BorderLayout.SOUTH);
+        frame.add(panelInferiorActual, BorderLayout.SOUTH);
         frame.revalidate();
         frame.repaint();
     }

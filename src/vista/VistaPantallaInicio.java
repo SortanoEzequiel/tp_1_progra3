@@ -50,7 +50,7 @@ public class VistaPantallaInicio {
 	        frame.getContentPane().add(btn_iniciar);
 	        //inicia el juego desde el controlador
 	        btn_iniciar.addActionListener(e -> {
-	            controlador.iniciarJuego();
+	            controlador.iniciarJuego("facil");
 	            frame.dispose();
 	        });
 
