@@ -5,7 +5,6 @@ import controller.ControladorInicio;
 
 public class Nanograma {
 
-    private JFrame frame;
     private ControladorInicio controlador;
 
     public Nanograma() {
@@ -14,15 +13,11 @@ public class Nanograma {
 
     public void initialize() {
         controlador = new ControladorInicio();
-        controlador.iniciarJuego("Facil"); // o pedir dificultad al usuario
-        frame = controlador.getVistaFrame(); // nuevo método en el controlador
-    }
-
-    public JFrame getFrame() {
-        return this.frame;
+        controlador.iniciarJuego("medio"); // podrías reemplazar esto por una selección dinámica
     }
 
     public void mostrar() {
+        JFrame frame = controlador.getVistaFrame();
         if (frame != null) {
             frame.setVisible(true);
         }

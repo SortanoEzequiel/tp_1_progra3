@@ -1,62 +1,30 @@
 package modelo;
 
-import java.awt.Color;
-import java.awt.Font;
-import javax.swing.JButton;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Tablero {
-    private JButton[][] celdas = new JButton[5][5];
     private int[][] solucion;
     private int[][] estados = new int[5][5];
+    private List<CeldaListener> listeners = new ArrayList<>();
 
     public Tablero(int[][] tableroYaCreado) {
         this.solucion = tableroYaCreado;
     }
-
-    public void setCeldas(JButton[][] celdasExternas) {
-        this.celdas = celdasExternas;
-    }
-
-    public void reiniciarEstados() {
-        for (int fila = 0; fila < 5; fila++) {
-            for (int col = 0; col < 5; col++) {
-                estados[fila][col] = 0;
-            }
-        }
-    }
-
-    public void reiniciarCeldas() {
-        for (int fila = 0; fila < 5; fila++) {
-            for (int col = 0; col < 5; col++) {
-                estados[fila][col] = 0;
-                JButton celda = celdas[fila][col];
-                celda.setBackground(Color.WHITE);
-                celda.setText("");
-                celda.setForeground(Color.BLACK);
-                celda.setFont(new Font("Arial", Font.PLAIN, 12));
-            }
-        }
+    
+    public void agregarListener(CeldaListener listener) {
+        listeners.add(listener);
     }
 
     public void actualizarEstado(int fila, int col) {
         estados[fila][col] = (estados[fila][col] + 1) % 3;
-        JButton celda = celdas[fila][col];
+        notificarCambio(fila, col, estados[fila][col]);
+    }
 
-        switch (estados[fila][col]) {
-            case 0:
-                celda.setBackground(Color.WHITE);
-                celda.setText("");
-                break;
-            case 1:
-                celda.setBackground(Color.BLACK);
-                celda.setText("");
-                break;
-            case 2:
-                celda.setBackground(Color.WHITE);
-                celda.setForeground(Color.RED);
-                celda.setFont(new Font("Arial", Font.BOLD, 45));
-                celda.setText("X");
-                break;
+    private void notificarCambio(int fila, int col, int nuevoEstado) {
+        EventoCambioCelda evento = new EventoCambioCelda(fila, col, nuevoEstado);
+        for (CeldaListener listener : listeners) {
+            listener.celdaActualizada(evento);
         }
     }
 
@@ -64,8 +32,7 @@ public class Tablero {
         boolean correcto = true;
         for (int fila = 0; fila < 5; fila++) {
             for (int col = 0; col < 5; col++) {
-                Color color = celdas[fila][col].getBackground();
-                int valor = (color.equals(Color.BLACK)) ? 1 : 0;
+                int valor = (estados[fila][col] == 1) ? 1 : 0;
                 if (valor != solucion[fila][col]) {
                     correcto = false;
                     break;
@@ -76,6 +43,12 @@ public class Tablero {
     }
 
     public String generarPistaFila(int[] fila) {
+    	for (int f = 0; f < solucion.length; f++) {
+            for (int col = 0; col < solucion[f].length; col++) {
+                System.out.print(solucion[f][col] + "\t"); // tabulación para alinear columnas
+            }
+            System.out.println(); // salto de línea al final de cada fila
+        }
         StringBuilder pista = new StringBuilder();
         int contador = 0;
         for (int val : fila) {
@@ -91,19 +64,31 @@ public class Tablero {
     }
 
     public String generarPistaColumna(int[][] matriz, int col) {
-        StringBuilder pista = new StringBuilder();
+        StringBuilder pista = new StringBuilder("<html>");
         int contador = 0;
         for (int fila = 0; fila < matriz.length; fila++) {
             if (matriz[fila][col] == 1) {
                 contador++;
             } else if (contador > 0) {
-                pista.append(contador).append(" ");
+                pista.append(contador).append("<br>");
                 contador = 0;
             }
         }
-        if (contador > 0) pista.append(contador);
-        return pista.length() == 0 ? "0" : pista.toString().trim();
+        if (contador > 0) pista.append(contador).append("<br>");
+        if (pista.toString().equals("<html>")) pista.append("0<br>");
+        pista.append("</html>");
+        return pista.toString();
     }
+    public void reiniciarEstados() {
+        for (int fila = 0; fila < 5; fila++) {
+            for (int col = 0; col < 5; col++) {
+                estados[fila][col] = 0;
+            }
+        }
+    }
+    
+
+
 
     public int[][] getSolucion() {
         return solucion;
