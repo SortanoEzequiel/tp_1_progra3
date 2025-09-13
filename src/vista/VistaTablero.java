@@ -1,227 +1,154 @@
 package vista;
 
-import controller.ControladorInicio;
-
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
-public class VistaTablero {
-    private final ControladorInicio controlador;
-    private JButton[][] celdas;
-    private JPanel panelPrincipal;
-    private JPanel panelInferiorActual;
-    private JPanel pistasColumnas;
-    private JPanel pistasFilas;
-    private JPanel panel;
-    private JFrame frame;
-    private JPanel centro;
+/**
+ * Vista del tablero con:
+ * - grilla de botones (celdas)
+ * - pistas (filas a la izquierda, columnas arriba)
+ * - botones en el pie: Comprobar, Reintentar, Cambiar Tablero
+ */
+public class VistaTablero extends JPanel {
 
-    public VistaTablero(ControladorInicio controlador) {
-        this.controlador = controlador;
-    }
+    private final JButton[][] botones;
+    private final JButton botonComprobar;
+    private final JButton botonReintentar;
+    private final JButton botonCambiarTablero;
 
-    public JFrame generarTablero() {
-        int tamaño = controlador.getTamañoTablero();
+    public VistaTablero(modelo.Tablero tablero) {
+        setLayout(new BorderLayout());
 
-        frame = new JFrame("Nonograma");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 600);
-        frame.setLayout(new BorderLayout());
+        int filas = tablero.getFilas();
+        int columnas = tablero.getColumnas();
 
-        panelPrincipal = new JPanel(new BorderLayout());
+        // Panel central con la grilla de celdas
+        JPanel panelCentral = new JPanel(new GridLayout(filas, columnas, 2, 2));
+        botones = new JButton[filas][columnas];
 
-        // Pistas de columna
-        pistasColumnas = new JPanel(new GridLayout(1, tamaño));
-        for (int col = 0; col < tamaño; col++) {
-            String pistaTexto = controlador.generarPistaColumna(col);
-            String[] numeros = pistaTexto.split(" ");
-            JPanel pistaColPanel = new JPanel(new GridLayout(numeros.length, 1));
-            for (String num : numeros) {
-                JLabel etiqueta = new JLabel(num, SwingConstants.CENTER);
-                pistaColPanel.add(etiqueta);
-            }
-            pistasColumnas.add(pistaColPanel);
-        }
-        panelPrincipal.add(pistasColumnas, BorderLayout.NORTH);
-
-        // Pistas de fila
-        pistasFilas = new JPanel(new GridLayout(tamaño, 1));
-        for (int fila = 0; fila < tamaño; fila++) {
-            String pistaTexto = controlador.generarPistaFila(fila);
-            JLabel pista = new JLabel(pistaTexto, SwingConstants.RIGHT);
-            pistasFilas.add(pista);
-        }
-
-        // Panel de celdas
-        panel = new JPanel(new GridLayout(tamaño, tamaño));
-        celdas = new JButton[tamaño][tamaño];
-        for (int fila = 0; fila < tamaño; fila++) {
-            for (int col = 0; col < tamaño; col++) {
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j < columnas; j++) {
                 JButton celda = new JButton();
-                final int f = fila;
-                final int c = col;
-
-                celda.setOpaque(true);
-                celda.setContentAreaFilled(true);
-                celda.setBorderPainted(true);
-                celda.setFocusPainted(false);
-                celda.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                celda.setPreferredSize(new Dimension(40, 40));
                 celda.setBackground(Color.WHITE);
-                celda.addActionListener(e -> controlador.celdaClickeada(f, c));
-
-                celdas[fila][col] = celda;
-                panel.add(celda);
-            }
-        }
-
-        controlador.setCeldas(celdas);
-
-        centro = new JPanel(new BorderLayout());
-        centro.add(pistasFilas, BorderLayout.WEST);
-        centro.add(panel, BorderLayout.CENTER);
-        panelPrincipal.add(centro, BorderLayout.CENTER);
-
-        actualizarPanelInferior(wrapComprobarButton());
-
-        frame.add(panelPrincipal);
-        return frame;
-    }
-
-    public void reconstruirTablero() {
-        int tamaño = controlador.getTamañoTablero();
-        panel.removeAll();
-        controlador.reiniciarTablero();
-
-        celdas = new JButton[tamaño][tamaño];
-        panel.setLayout(new GridLayout(tamaño, tamaño));
-
-        for (int fila = 0; fila < tamaño; fila++) {
-            for (int col = 0; col < tamaño; col++) {
-                JButton celda = new JButton();
-                final int f = fila;
-                final int c = col;
                 celda.setOpaque(true);
-                celda.setContentAreaFilled(true);
-                celda.setBorderPainted(true);
-                celda.setFocusPainted(false);
                 celda.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-                celda.setBackground(Color.WHITE);
-                celda.addActionListener(e -> controlador.celdaClickeada(f, c));
-                celdas[fila][col] = celda;
-                panel.add(celda);
+                // actionCommand con coordenadas "fila,col"
+                celda.setActionCommand(i + "," + j);
+                botones[i][j] = celda;
+                panelCentral.add(celda);
             }
         }
 
-        controlador.setCeldas(celdas);
-        agregarPistas();
-        actualizarPanelInferior(wrapComprobarButton());
-        frame.revalidate();
-        frame.repaint();
+        // Pistas filas (izquierda): texto horizontal "1 2"
+        JPanel panelFilas = new JPanel(new GridLayout(filas, 1));
+        panelFilas.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 8));
+        for (int[] pistaFila : tablero.getPistasFilas()) {
+            JLabel lbl = new JLabel(formatearHorizontal(pistaFila), SwingConstants.RIGHT);
+            lbl.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            panelFilas.add(lbl);
+        }
+
+        // Pistas columnas (arriba): cada columna con números verticales
+        JPanel panelColumnas = new JPanel(new GridLayout(1, columnas));
+        panelColumnas.setBorder(BorderFactory.createEmptyBorder(8, 4, 4, 4));
+        for (int[] pistaColumna : tablero.getPistasColumnas()) {
+            panelColumnas.add(crearEtiquetaVertical(pistaColumna));
+        }
+
+        // Panel inferior con botones de control
+        JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        botonComprobar = new JButton("Comprobar");
+        botonReintentar = new JButton("Reintentar");
+        botonCambiarTablero = new JButton("Cambiar Tablero");
+
+        botonComprobar.setActionCommand("COMPROBAR");
+        botonReintentar.setActionCommand("REINTENTAR");
+        botonCambiarTablero.setActionCommand("CAMBIAR");
+
+        panelInferior.add(botonComprobar);
+        panelInferior.add(botonReintentar);
+        panelInferior.add(botonCambiarTablero);
+
+        // Agregar subpaneles al principal
+        add(panelColumnas, BorderLayout.NORTH);
+        add(panelFilas, BorderLayout.WEST);
+        add(panelCentral, BorderLayout.CENTER);
+        add(panelInferior, BorderLayout.SOUTH);
     }
 
-    public void agregarPistas() {
-        int tamaño = controlador.getTamañoTablero();
+    // ---------- Métodos para conectar listeners ----------
 
-        if (pistasFilas != null && pistasFilas.getParent() != null) {
-            pistasFilas.getParent().remove(pistasFilas);
-        }
-        if (pistasColumnas != null && pistasColumnas.getParent() != null) {
-            pistasColumnas.getParent().remove(pistasColumnas);
-        }
-
-        pistasColumnas = new JPanel(new GridLayout(1, tamaño));
-        for (int col = 0; col < tamaño; col++) {
-            String pistaTexto = controlador.generarPistaColumna(col);
-            String[] numeros = pistaTexto.split(" ");
-            JPanel pistaColPanel = new JPanel(new GridLayout(numeros.length, 1));
-            for (String num : numeros) {
-                JLabel etiqueta = new JLabel(num, SwingConstants.CENTER);
-                pistaColPanel.add(etiqueta);
+    /**
+     * Agrega el mismo ActionListener a todas las celdas de la grilla.
+     * El ActionEvent.getActionCommand() será "fila,col".
+     */
+    public void addListenerToAllCells(ActionListener listener) {
+        for (JButton[] fila : botones) {
+            for (JButton btn : fila) {
+                btn.addActionListener(listener);
             }
-            pistasColumnas.add(pistaColPanel);
         }
-        panelPrincipal.add(pistasColumnas, BorderLayout.NORTH);
-
-        panelPrincipal.remove(centro);
-
-        pistasFilas = new JPanel(new GridLayout(tamaño, 1));
-        for (int fila = 0; fila < tamaño; fila++) {
-            String pistaTexto = controlador.generarPistaFila(fila);
-            JLabel pista = new JLabel(pistaTexto, SwingConstants.RIGHT);
-            pistasFilas.add(pista);
-        }
-
-        centro = new JPanel(new BorderLayout());
-        centro.add(pistasFilas, BorderLayout.WEST);
-        centro.add(panel, BorderLayout.CENTER);
-        panelPrincipal.add(centro, BorderLayout.CENTER);
     }
 
-    public void actualizarPanelInferior(JPanel nuevoPanel) {
-        if (panelInferiorActual != null) {
-            frame.remove(panelInferiorActual);
-        }
-        panelInferiorActual = nuevoPanel;
-        frame.add(panelInferiorActual, BorderLayout.SOUTH);
-        frame.revalidate();
-        frame.repaint();
+    public void addComprobarListener(ActionListener listener) {
+        botonComprobar.addActionListener(listener);
     }
 
-    public JPanel wrapComprobarButton() {
-        JPanel panel = new JPanel();
-        panel.add(comprobarResultadosButton());
-        return panel;
+    public void addReintentarListener(ActionListener listener) {
+        botonReintentar.addActionListener(listener);
     }
 
-    public JButton comprobarResultadosButton() {
-        JButton comprobarBtn = new JButton("Comprobar");
-        comprobarBtn.addActionListener(e -> {
-            String mensaje = controlador.comprobarResultados();
-            JOptionPane.showMessageDialog(frame, mensaje);
+    public void addCambiarTableroListener(ActionListener listener) {
+        botonCambiarTablero.addActionListener(listener);
+    }
 
-            JPanel opcionesPanel = new JPanel(new FlowLayout());
+    // Permite que el controlador actualice visualmente una celda
+    public void setCeldaMarcada(int fila, int columna, boolean marcada) {
+        JButton btn = botones[fila][columna];
+        btn.setBackground(marcada ? Color.BLACK : Color.WHITE);
+    }
 
-            if (mensaje.equals("¡Ganaste!")) {
-                opcionesPanel.add(botonNuevoTablero());
-            } else {
-                JButton intentarDeNuevoBtn = new JButton("Intentar de nuevo");
-                intentarDeNuevoBtn.addActionListener(ev -> reconstruirTablero());
-
-                opcionesPanel.add(intentarDeNuevoBtn);
-                opcionesPanel.add(botonNuevoTablero());
+    // Reinicia visualmente todas las celdas (a blanco)
+    public void resetVisualEstado() {
+        for (JButton[] fila : botones) {
+            for (JButton b : fila) {
+                b.setBackground(Color.WHITE);
             }
-
-            actualizarPanelInferior(opcionesPanel);
-        });
-        return comprobarBtn;
+        }
     }
 
-    private JButton botonNuevoTablero() {
-        JButton cambiarTableroBtn = new JButton("Cambiar tablero");
-        cambiarTableroBtn.addActionListener(ev -> {
-            String[] opciones = {"Facil", "Medio", "Dificil"};
-            String seleccion = (String) JOptionPane.showInputDialog(
-                    frame,
-                    "Selecciona dificultad:",
-                    "Nuevo tablero",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    opciones,
-                    opciones[0]
-            );
-            if (seleccion != null) {
-                frame.dispose();
-                controlador.iniciarJuego(seleccion.toLowerCase());
-            }
-        });
-        return cambiarTableroBtn;
-    }
-    public JButton getCelda(int fila, int col) {
-        return celdas[fila][col];
-    }
-    public void setCeldas(JButton[][] nuevasCeldas) {
-        this.celdas = nuevasCeldas;
+    // ---------- Formateo de pistas ----------
+
+    private String formatearHorizontal(int[] pista) {
+        if (pista == null || pista.length == 0) return "-";
+        // si la pista contiene un 0 sólo => significa "sin bloques", mostramos "-"
+        if (pista.length == 1 && pista[0] == 0) return "-";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pista.length; i++) {
+            if (i > 0) sb.append(" ");
+            sb.append(pista[i]);
+        }
+        return sb.toString();
     }
 
+    private JPanel crearEtiquetaVertical(int[] pista) {
+        // Si pista = {0} mostramos un "-" en una sola celda
+        if (pista == null || (pista.length == 1 && pista[0] == 0)) {
+            JPanel p = new JPanel(new GridLayout(1, 1));
+            JLabel l = new JLabel("-", SwingConstants.CENTER);
+            l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            p.add(l);
+            return p;
+        }
 
+        JPanel p = new JPanel(new GridLayout(pista.length, 1));
+        for (int num : pista) {
+            JLabel l = new JLabel(String.valueOf(num), SwingConstants.CENTER);
+            l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            p.add(l);
+        }
+        return p;
+    }
 }
