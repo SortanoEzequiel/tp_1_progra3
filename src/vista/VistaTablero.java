@@ -7,9 +7,7 @@ import java.awt.*;
 
 public class VistaTablero {
     private final ControladorInicio controlador;
-    private final JButton[][] celdas = new JButton[5][5];
-    private final JLabel[] pistasFila = new JLabel[5];
-    private final JLabel[] pistasColumna = new JLabel[5];
+    private JButton[][] celdas;
     private JPanel panelPrincipal;
     private JPanel panelInferiorActual;
     private JPanel pistasColumnas;
@@ -18,22 +16,23 @@ public class VistaTablero {
     private JFrame frame;
     private JPanel centro;
 
-
     public VistaTablero(ControladorInicio controlador) {
         this.controlador = controlador;
     }
 
     public JFrame generarTablero() {
+        int tamaño = controlador.getTamañoTablero();
+
         frame = new JFrame("Nonograma");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(700, 700);
+        frame.setSize(600, 600);
         frame.setLayout(new BorderLayout());
 
         panelPrincipal = new JPanel(new BorderLayout());
 
-        // Pistas de columna (arriba)
-        pistasColumnas = new JPanel(new GridLayout(1, 5));
-        for (int col = 0; col < 5; col++) {
+        // Pistas de columna
+        pistasColumnas = new JPanel(new GridLayout(1, tamaño));
+        for (int col = 0; col < tamaño; col++) {
             String pistaTexto = controlador.generarPistaColumna(col);
             String[] numeros = pistaTexto.split(" ");
             JPanel pistaColPanel = new JPanel(new GridLayout(numeros.length, 1));
@@ -45,18 +44,19 @@ public class VistaTablero {
         }
         panelPrincipal.add(pistasColumnas, BorderLayout.NORTH);
 
-        // Pistas de fila (izquierda)
-        pistasFilas = new JPanel(new GridLayout(5, 1));
-        for (int fila = 0; fila < 5; fila++) {
+        // Pistas de fila
+        pistasFilas = new JPanel(new GridLayout(tamaño, 1));
+        for (int fila = 0; fila < tamaño; fila++) {
             String pistaTexto = controlador.generarPistaFila(fila);
             JLabel pista = new JLabel(pistaTexto, SwingConstants.RIGHT);
             pistasFilas.add(pista);
         }
 
         // Panel de celdas
-        panel = new JPanel(new GridLayout(5, 5));
-        for (int fila = 0; fila < 5; fila++) {
-            for (int col = 0; col < 5; col++) {
+        panel = new JPanel(new GridLayout(tamaño, tamaño));
+        celdas = new JButton[tamaño][tamaño];
+        for (int fila = 0; fila < tamaño; fila++) {
+            for (int col = 0; col < tamaño; col++) {
                 JButton celda = new JButton();
                 final int f = fila;
                 final int c = col;
@@ -76,33 +76,27 @@ public class VistaTablero {
 
         controlador.setCeldas(celdas);
 
-        // Combinar pistas de fila y tablero
         centro = new JPanel(new BorderLayout());
         centro.add(pistasFilas, BorderLayout.WEST);
         centro.add(panel, BorderLayout.CENTER);
         panelPrincipal.add(centro, BorderLayout.CENTER);
 
-        // Panel inferior con botón Comprobar
         actualizarPanelInferior(wrapComprobarButton());
 
         frame.add(panelPrincipal);
         return frame;
     }
 
-    public JButton getCelda(int fila, int col) {
-        return celdas[fila][col];
-    }
-
-    public void setCeldas(JButton[][] nuevasCeldas) {
-        for (int i = 0; i < 5; i++)
-            System.arraycopy(nuevasCeldas[i], 0, celdas[i], 0, 5);
-    }
-
     public void reconstruirTablero() {
+        int tamaño = controlador.getTamañoTablero();
         panel.removeAll();
         controlador.reiniciarTablero();
-        for (int fila = 0; fila < 5; fila++) {
-            for (int col = 0; col < 5; col++) {
+
+        celdas = new JButton[tamaño][tamaño];
+        panel.setLayout(new GridLayout(tamaño, tamaño));
+
+        for (int fila = 0; fila < tamaño; fila++) {
+            for (int col = 0; col < tamaño; col++) {
                 JButton celda = new JButton();
                 final int f = fila;
                 final int c = col;
@@ -117,6 +111,7 @@ public class VistaTablero {
                 panel.add(celda);
             }
         }
+
         controlador.setCeldas(celdas);
         agregarPistas();
         actualizarPanelInferior(wrapComprobarButton());
@@ -125,16 +120,17 @@ public class VistaTablero {
     }
 
     public void agregarPistas() {
-    	if (pistasFilas != null && pistasFilas.getParent() != null) {
-    	    pistasFilas.getParent().remove(pistasFilas);
-    	}
-    	if (pistasColumnas != null && pistasColumnas.getParent() != null) {
-    	    pistasColumnas.getParent().remove(pistasColumnas);
-    	}
+        int tamaño = controlador.getTamañoTablero();
 
-        // reconstruir pistas de columna
-        pistasColumnas = new JPanel(new GridLayout(1, 5));
-        for (int col = 0; col < 5; col++) {
+        if (pistasFilas != null && pistasFilas.getParent() != null) {
+            pistasFilas.getParent().remove(pistasFilas);
+        }
+        if (pistasColumnas != null && pistasColumnas.getParent() != null) {
+            pistasColumnas.getParent().remove(pistasColumnas);
+        }
+
+        pistasColumnas = new JPanel(new GridLayout(1, tamaño));
+        for (int col = 0; col < tamaño; col++) {
             String pistaTexto = controlador.generarPistaColumna(col);
             String[] numeros = pistaTexto.split(" ");
             JPanel pistaColPanel = new JPanel(new GridLayout(numeros.length, 1));
@@ -146,11 +142,10 @@ public class VistaTablero {
         }
         panelPrincipal.add(pistasColumnas, BorderLayout.NORTH);
 
-        // eliminar y reconstruir el panel central (pistas de fila + tablero)
-        panelPrincipal.remove(centro); // ← asegurate de tener centro como atributo
+        panelPrincipal.remove(centro);
 
-        pistasFilas = new JPanel(new GridLayout(5, 1));
-        for (int fila = 0; fila < 5; fila++) {
+        pistasFilas = new JPanel(new GridLayout(tamaño, 1));
+        for (int fila = 0; fila < tamaño; fila++) {
             String pistaTexto = controlador.generarPistaFila(fila);
             JLabel pista = new JLabel(pistaTexto, SwingConstants.RIGHT);
             pistasFilas.add(pista);
@@ -161,8 +156,6 @@ public class VistaTablero {
         centro.add(panel, BorderLayout.CENTER);
         panelPrincipal.add(centro, BorderLayout.CENTER);
     }
-
-
 
     public void actualizarPanelInferior(JPanel nuevoPanel) {
         if (panelInferiorActual != null) {
@@ -189,28 +182,46 @@ public class VistaTablero {
             JPanel opcionesPanel = new JPanel(new FlowLayout());
 
             if (mensaje.equals("¡Ganaste!")) {
-                JButton jugarOtroBtn = new JButton("Jugar otro");
-                jugarOtroBtn.addActionListener(ev -> {
-                    frame.dispose();
-                    controlador.iniciarJuego("facil");
-                });
-                opcionesPanel.add(jugarOtroBtn);
+                opcionesPanel.add(botonNuevoTablero());
             } else {
                 JButton intentarDeNuevoBtn = new JButton("Intentar de nuevo");
                 intentarDeNuevoBtn.addActionListener(ev -> reconstruirTablero());
 
-                JButton cambiarTableroBtn = new JButton("Cambiar tablero");
-                cambiarTableroBtn.addActionListener(ev -> {
-                    frame.dispose();
-                    controlador.iniciarJuego("facil");
-                });
-
                 opcionesPanel.add(intentarDeNuevoBtn);
-                opcionesPanel.add(cambiarTableroBtn);
+                opcionesPanel.add(botonNuevoTablero());
             }
 
             actualizarPanelInferior(opcionesPanel);
         });
         return comprobarBtn;
     }
+
+    private JButton botonNuevoTablero() {
+        JButton cambiarTableroBtn = new JButton("Cambiar tablero");
+        cambiarTableroBtn.addActionListener(ev -> {
+            String[] opciones = {"Facil", "Medio", "Dificil"};
+            String seleccion = (String) JOptionPane.showInputDialog(
+                    frame,
+                    "Selecciona dificultad:",
+                    "Nuevo tablero",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    opciones,
+                    opciones[0]
+            );
+            if (seleccion != null) {
+                frame.dispose();
+                controlador.iniciarJuego(seleccion.toLowerCase());
+            }
+        });
+        return cambiarTableroBtn;
+    }
+    public JButton getCelda(int fila, int col) {
+        return celdas[fila][col];
+    }
+    public void setCeldas(JButton[][] nuevasCeldas) {
+        this.celdas = nuevasCeldas;
+    }
+
+
 }

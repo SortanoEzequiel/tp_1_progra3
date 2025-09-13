@@ -30,10 +30,10 @@ public class CreacionTablero {
                 matrizJuego = new int[5][5];
                 break;
             case "medio":
-                matrizJuego = new int[10][10];
+                matrizJuego = new int[6][6];
                 break;
             case "dificil":
-                matrizJuego = new int[15][15];
+                matrizJuego = new int[7][7];
                 break;
             default:
                 matrizJuego = new int[5][5]; // Valor por defecto

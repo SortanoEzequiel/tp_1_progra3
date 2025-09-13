@@ -5,12 +5,14 @@ import java.util.List;
 
 public class Tablero {
     private int[][] solucion;
-    private int[][] estados = new int[5][5];
+    private int[][] estados;
     private List<CeldaListener> listeners = new ArrayList<>();
 
     public Tablero(int[][] tableroYaCreado) {
         this.solucion = tableroYaCreado;
+        this.estados = new int[solucion.length][solucion[0].length];
     }
+
     
     public void agregarListener(CeldaListener listener) {
         listeners.add(listener);
@@ -30,8 +32,8 @@ public class Tablero {
 
     public String comprobarResultados() {
         boolean correcto = true;
-        for (int fila = 0; fila < 5; fila++) {
-            for (int col = 0; col < 5; col++) {
+        for (int fila = 0; fila < solucion.length; fila++) {
+            for (int col = 0; col < solucion[fila].length; col++) {
                 int valor = (estados[fila][col] == 1) ? 1 : 0;
                 if (valor != solucion[fila][col]) {
                     correcto = false;
@@ -39,7 +41,7 @@ public class Tablero {
                 }
             }
         }
-        return correcto ? "¡Ganaste!" : "Jugar otro";
+        return correcto ? "¡Ganaste!" : "Perdiste";
     }
 
     public String generarPistaFila(int[] fila) {
@@ -63,11 +65,11 @@ public class Tablero {
         return pista.length() == 0 ? "0" : pista.toString().trim();
     }
 
-    public String generarPistaColumna(int[][] matriz, int col) {
+    public String generarPistaColumna(int col) {
         StringBuilder pista = new StringBuilder("<html>");
         int contador = 0;
-        for (int fila = 0; fila < matriz.length; fila++) {
-            if (matriz[fila][col] == 1) {
+        for (int fila = 0; fila < solucion.length; fila++) {
+            if (solucion[fila][col] == 1) {
                 contador++;
             } else if (contador > 0) {
                 pista.append(contador).append("<br>");
@@ -79,13 +81,18 @@ public class Tablero {
         pista.append("</html>");
         return pista.toString();
     }
+
     public void reiniciarEstados() {
-        for (int fila = 0; fila < 5; fila++) {
-            for (int col = 0; col < 5; col++) {
+    	for (int fila = 0; fila < solucion.length; fila++) {
+    	    for (int col = 0; col < solucion[fila].length; col++) {
                 estados[fila][col] = 0;
             }
         }
     }
+    public int getEstado(int fila, int col) {
+        return estados[fila][col];
+    }
+
     
 
 

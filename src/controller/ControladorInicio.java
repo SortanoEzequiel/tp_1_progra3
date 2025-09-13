@@ -3,6 +3,8 @@ package controller;
 import modelo.*;
 import vista.VistaTablero;
 
+import java.awt.Color;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
@@ -29,10 +31,26 @@ public class ControladorInicio implements CeldaListener {
 
     public void celdaClickeada(int fila, int col) {
         tablero.actualizarEstado(fila, col);
+        int estado = tablero.getEstado(fila, col); // ← nuevo método en Tablero
+        JButton celda = vista.getCelda(fila, col);
+
+        switch (estado) {
+            case 0:
+                celda.setBackground(Color.WHITE);
+                break;
+            case 1:
+                celda.setBackground(Color.BLACK);
+                break;
+            case 2:
+                celda.setBackground(Color.RED);
+                break;
+        }
     }
+
     public String generarPistaColumna(int col) {
-        return tablero.generarPistaColumna(tablero.getSolucion(), col);
+        return tablero.generarPistaColumna(col);
     }
+
     public String comprobarResultados() {
         return tablero.comprobarResultados();
     }
@@ -44,6 +62,10 @@ public class ControladorInicio implements CeldaListener {
             tablero.reiniciarEstados(); // ← mantiene la misma solución
         }
     }
+    public int getTamañoTablero() {
+        return tablero.getSolucion().length;
+    }
+
 
     
 

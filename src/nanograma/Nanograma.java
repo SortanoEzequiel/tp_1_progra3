@@ -7,13 +7,13 @@ public class Nanograma {
 
     private ControladorInicio controlador;
 
-    public Nanograma() {
-        initialize();
+    public Nanograma(String dificultad) {
+        initialize(dificultad);
     }
 
-    public void initialize() {
+    public void initialize(String dificultad) {
         controlador = new ControladorInicio();
-        controlador.iniciarJuego("medio"); // podrías reemplazar esto por una selección dinámica
+        controlador.iniciarJuego(dificultad);
     }
 
     public void mostrar() {
