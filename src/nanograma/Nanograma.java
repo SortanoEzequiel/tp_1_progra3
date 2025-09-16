@@ -1,25 +1,19 @@
 package nanograma;
 
-import javax.swing.JFrame;
-import controller.ControladorInicio;
+import modelo.Tablero;
 
 public class Nanograma {
+    private Tablero tablero;
 
-    private ControladorInicio controlador;
-
-    public Nanograma(String dificultad) {
-        initialize(dificultad);
+    public Nanograma(int filas, int columnas) {
+        this.tablero = new Tablero(filas, columnas);
     }
 
-    public void initialize(String dificultad) {
-        controlador = new ControladorInicio();
-        controlador.iniciarJuego(dificultad);
+    public Tablero getTablero() {
+        return tablero;
     }
 
-    public void mostrar() {
-        JFrame frame = controlador.getVistaFrame();
-        if (frame != null) {
-            frame.setVisible(true);
-        }
+    public void nuevoTablero(int filas, int columnas) {
+        this.tablero = new Tablero(filas, columnas);
     }
 }
